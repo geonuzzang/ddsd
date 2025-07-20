@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+=<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -142,6 +142,13 @@
             });
             modals.action.classList.remove('hidden');
         };
+        
+        const showPasswordModal = (stageNum) => {
+            passwordInput.value = "";
+            const title = stageNum === 1 ? "달에게 속삭인다..." : "우주선에 암호를 입력한다...";
+            document.getElementById('password-title').textContent = title;
+            modals.password.classList.remove('hidden');
+        };
 
         const advanceToNextStage = () => {
             stages[gameState.currentStage].classList.add('hidden');
@@ -149,13 +156,13 @@
             if (stages[gameState.currentStage]) {
                 stages[gameState.currentStage].classList.remove('hidden');
                 alert(`다음 단계로 이동합니다: ${gameState.currentStage}단계`);
-                hintList.innerHTML = ''; // 다음 단계를 위해 힌트 목록 초기화
+                hintList.innerHTML = ''; 
+                gameState.solvedPuzzles.clear();
             } else {
                 modals.clear.classList.remove('hidden');
             }
         };
 
-        // --- 비밀번호 확인 및 모달 닫기 ---
         document.getElementById('password-submit-btn').addEventListener('click', () => {
             const correctPassword = gameState.passwords[gameState.currentStage];
             if (passwordInput.value === correctPassword) {
@@ -180,7 +187,7 @@
                 document.getElementById('s1-q1-btn').onclick = () => {
                     if (document.getElementById('s1-q1').value === '2') {
                         if (addHint("1단계 첫 번째 숫자: 2", 's1-tree')) {
-                            alert('정답! 새가 숫자 "2" 모양의 땅콩을 떨어뜨렸다.');
+                            alert('정답! 나무가 숫자 "2" 모양의 나뭇잎을 떨어뜨렸다.');
                             modals.puzzle.classList.add('hidden');
                         }
                     } else { alert('아닌 것 같다. 이름을 다시 한번 생각해보자.'); }
@@ -205,16 +212,19 @@
                 modals.action.classList.add('hidden');
                 puzzleContainer.innerHTML = `<h2>계엄군 피하기</h2><p>키보드 좌우 방향키로 10초간 장애물을 피하세요!</p><div class="game-canvas" id="game-canvas"><div class="player" id="player"></div></div><h3 id="game-timer">10</h3>`;
                 modals.puzzle.classList.remove('hidden');
+                
                 const canvas = document.getElementById('game-canvas'), player = document.getElementById('player'), timerDisplay = document.getElementById('game-timer');
                 let playerPos = 230; player.style.left = playerPos + 'px';
                 let gameInterval, obstacleInterval, keydownListener;
                 let timeLeft = 10;
+                
                 const movePlayer = (e) => {
                     if (e.key === 'ArrowLeft') playerPos = Math.max(0, playerPos - 20);
                     if (e.key === 'ArrowRight') playerPos = Math.min(460, playerPos + 20);
                     player.style.left = playerPos + 'px';
                 };
                 keydownListener = movePlayer; document.addEventListener('keydown', keydownListener);
+                
                 const createObstacle = () => {
                     const obstacle = document.createElement('div');
                     obstacle.className = 'obstacle';
@@ -223,7 +233,7 @@
                     canvas.appendChild(obstacle);
                     let obstaclePos = -30;
                     const fall = setInterval(() => {
-                        if (obstaclePos > 400) { clearInterval(fall); if(obstacle.parentNode) obstacle.remove(); }
+                        if (obstaclePos > 400) { clearInterval(fall); if(obstacle.parentNode) obstacle.remove(); } 
                         else {
                             obstaclePos += 10; obstacle.style.top = obstaclePos + 'px';
                             const pRect = player.getBoundingClientRect(), oRect = obstacle.getBoundingClientRect();
@@ -231,22 +241,25 @@
                         }
                     }, 50);
                 };
+                
                 const endGame = (isWin) => {
                     clearInterval(gameInterval); clearInterval(obstacleInterval);
                     document.removeEventListener('keydown', keydownListener);
                     if (isWin) {
                         alert('성공! 이제 달에게 비밀번호를 말할 수 있을 것 같다.');
                         gameState.minigameCleared[1] = true;
-                        addHint("힌트: 달에게 비밀번호를 말할 수 있다.", 's1-moon-game');
+                        addHint("힌트: 달의 시험을 통과했다.", 's1-moon-game');
                     } else { alert('실패! 다시 시도해보세요.'); }
                     modals.puzzle.classList.add('hidden');
                 };
+                
                 gameInterval = setInterval(() => { if (--timeLeft <= 0) endGame(true); timerDisplay.textContent = timeLeft; }, 1000);
                 obstacleInterval = setInterval(createObstacle, 400);
             };
+
             document.getElementById('s1-tree').addEventListener('click', (e) => {
                 e.target.classList.add('event-highlight'); setTimeout(() => e.target.classList.remove('event-highlight'), 700);
-                showActionModal('세계 일주를 한 새', '수많은 역사를 지켜본 듯하다.', [{ text: '새에게서 힌트 얻기', onClick: showTreePuzzle }]);
+                showActionModal('오래된 나무', '수많은 역사를 지켜본 듯하다.', [{ text: '나무껍질 살펴보기', onClick: showTreePuzzle }]);
             });
             document.getElementById('s1-rabbit').addEventListener('click', (e) => {
                 e.target.classList.add('event-highlight'); setTimeout(() => e.target.classList.remove('event-highlight'), 700);
@@ -254,9 +267,9 @@
             });
             document.getElementById('s1-moon').addEventListener('click', (e) => {
                 e.target.classList.add('event-highlight'); setTimeout(() => e.target.classList.remove('event-highlight'), 700);
-                showActionModal('1000년이나 된 나무', '뿌리가 아주 굵다. 특별한 힘이 느껴진다.', [
-                    { text: '나무를 보호해 주기', onClick: startDodgingGame },
-                    { text: '비밀번호 속삭이기', onClick: () => { modals.action.classList.add('hidden'); showPasswordModal(1); }, disabled: !gameState.minigameCleared[1], disabledMessage: '나무가 아직 당신을 믿지 않는 것 같다.' }
+                showActionModal('밤하늘의 달', '어두운 밤을 밝게 비추고 있다. 특별한 힘이 느껴진다.', [
+                    { text: '달의 힘 빌리기', onClick: startDodgingGame },
+                    { text: '비밀번호 속삭이기', onClick: () => { modals.action.classList.add('hidden'); showPasswordModal(1); }, disabled: !gameState.minigameCleared[1], disabledMessage: '달의 시험을 먼저 통과해야 한다.' }
                 ]);
             });
         };
